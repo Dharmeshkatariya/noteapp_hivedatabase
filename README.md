@@ -1,4 +1,6 @@
-# hivedatabase
+# note app using hivedatabase
+
+this app to keep note edit ,delete and new note added 
 
 A new Flutter project.
 
