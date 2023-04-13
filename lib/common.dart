@@ -9,9 +9,11 @@ class Common{
         hintText: text,
         prefixIcon: preicon,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(25),
         )
       ),
     );
   }
+
+
 }

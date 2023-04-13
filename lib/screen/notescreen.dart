@@ -1,17 +1,16 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:hivedatabase/boxes/boxs.dart';
-import 'package:hivedatabase/common.dart';
 import 'package:hivedatabase/controller/notescreen_controller.dart';
 import 'package:hivedatabase/modal/notemodal.dart';
 
-class NoteAppScreen extends StatelessWidget {
+import '../common.dart';
+
+class NoteAppScreen extends GetView<NoteScreenController> {
   NoteAppScreen({Key? key}) : super(key: key);
-  final _noteController = Get.put(NoteScreenController());
 
   @override
   Widget build(BuildContext context) {
@@ -20,11 +19,15 @@ class NoteAppScreen extends StatelessWidget {
           onPressed: () {
             _dialogBox();
           },
-          child: Icon(Icons.add),
+          child: const Icon(Icons.add),
         ),
         appBar: AppBar(
+          backgroundColor: Colors.pink.shade50,
           centerTitle: true,
-          title: const Text("Hive database"),
+          title: const Text(
+            "Hive database",
+            style: TextStyle(color: Colors.black),
+          ),
         ),
         body: ValueListenableBuilder<Box<NoteModal>>(
           valueListenable: Boxes.getData().listenable(),
@@ -33,11 +36,48 @@ class NoteAppScreen extends StatelessWidget {
             return ListView.builder(
                 itemCount: box.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return Card(
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.pink.shade50,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 10),
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 10),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
+                        Row(
+                          children: [
+                            Text(
+                              data[index].tittle,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                            const Spacer(),
+                            GestureDetector(
+                                onTap: () {
+                                  _editDialogBox(data[index],
+                                      data[index].tittle, data[index].desc);
+                                },
+                                child: const Icon(Icons.edit)),
+                            const SizedBox(
+                              width: 12,
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                controller.delete(data[index]);
+                              },
+                              child: const Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                              ),
+                            )
+                          ],
+                        ),
                         Text(data[index].desc),
-                        Text(data[index].tittle),
                       ],
                     ),
                   );
@@ -54,7 +94,7 @@ class NoteAppScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           alignment: Alignment.center,
           width: 300,
-          height: 250,
+          height: 300,
           color: Colors.white,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -65,26 +105,21 @@ class NoteAppScreen extends StatelessWidget {
               ),
               Common.textField(
                   text: "Enter tittle",
-                  controller: _noteController.tittleController),
+                  controller: controller.tittleController),
               Common.textField(
                   text: "Enter description",
-                  controller: _noteController.descController),
+                  controller: controller.descController),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _button(text: "cancel"),
+                  _button(text: "cancel",onTap: (){
+                    Get.back();
+                  }),
                   _button(
                       text: "Add",
                       onTap: () {
-                        final data = NoteModal(
-                            tittle: _noteController.tittleController.text,
-                            desc: _noteController.descController.text);
-                        final box = Boxes.getData();
-                        box.add(data);
-                        data.save();
-                        print(box);
-                        _noteController.tittleController.clear();
-                        _noteController.descController.clear();
+                        controller.addData();
+                        Get.back();
                       }),
                 ],
               )
@@ -111,5 +146,50 @@ class NoteAppScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _editDialogBox(NoteModal noteModal, String tittle, String desc) {
+    controller.tittleController.text = tittle;
+    controller.descController.text = desc;
+    Get.dialog(Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          alignment: Alignment.center,
+          width: 300,
+          height: 300,
+          color: Colors.white,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              const Text(
+                "Edit  Notes",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              Common.textField(
+                  text: "", controller: controller.tittleController),
+              Common.textField(text: "", controller: controller.descController),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _button(
+                      text: "cancel",
+                      onTap: () {
+                        Get.back();
+                      }),
+                  _button(
+                      text: "Edit",
+                      onTap: () async {
+                        controller.editData(noteModal);
+                        Get.back();
+                      }),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    ));
   }
 }
