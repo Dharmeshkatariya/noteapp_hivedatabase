@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import 'package:hivedatabase/screen/homescreen.dart';
+import 'package:hivedatabase/modal/notemodal.dart';
+import 'package:hivedatabase/screen/notescreen.dart';
 import 'package:path_provider/path_provider.dart';
 
 void main()async{
@@ -9,6 +10,12 @@ void main()async{
 
  var directory = await getApplicationDocumentsDirectory();
  Hive.init(directory.path);
+ Hive.registerAdapter(NoteModalAdapter());
+
+
+ await Hive.openBox<NoteModal>("note");
+
+
   runApp(const MyApp());
 }
 
@@ -24,7 +31,7 @@ class MyApp extends StatelessWidget {
 
         primarySwatch: Colors.blue,
       ),
-      home: HomeScreen()
+      home: NoteAppScreen()
     );
   }
 }
